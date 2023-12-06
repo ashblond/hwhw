@@ -1,0 +1,135 @@
+void Execution(int Instruction_number) {
+   short instruction = 0;
+   unsigned int opcode = 0;
+   int rm = 0;
+   int rn = 0;
+   int rd = 0;
+   int imm = 0;
+
+   instruction = Instruction_Mem[Instruction_number];
+   printf("instruction: %X\n", instruction);
+
+   opcode = instruction >> 15;
+   if (opcode == 0) {
+      opcode = instruction >> 14;
+      if (opcode == 1)
+      {
+         opcode = instruction >> 10;
+         if (opcode == 17) opcode = BX;
+         else if (opcode == 16)
+            opcode = instruction >> 8;
+         if (opcode == 67) opcode = ORRS;
+         else if (opcode == 64) opcode = ANDS;
+      }
+      else if (opcode == 0)
+      {
+         opcode = instruction >> 13;
+         if (opcode == 1) opcode = MOVS;
+         else if (opcode == 0)
+            opcode = instruction >> 9;
+         if (opcode == 12) opcode = ADDS;
+         else if (opcode == 13) opcode = SUBS;
+         else if (opcode == 14) opcode = ADDs;
+      }
+   }
+   else if (opcode == 1)
+   {
+         opcode = instruction >> 12;
+         if (opcode == 11)
+         {
+            opcode = instruction >> 7;
+            if (opcode == 353) opcode = SUB;
+            else if (opcode == 352) opcode = ADD;
+         }
+         else if (opcode == 9)
+         {
+            opcode = instruction >> 11;
+            if (opcode == 18) opcode = STR;
+            else if (opcode == 19) opcode = LDR;
+         }
+   }
+   
+
+   switch (opcode) {
+   case MOVS:
+      rd = (instruction >> 8) & 7;
+      imm = (instruction) & 255;
+
+      GPR[rd] = imm;
+      printf("MOVS  R%d, #%d", rd, imm);
+      GPR[15] += 2;
+      break;
+
+   case ADDS:
+      rm = (instruction >> 6) & 7;
+      rn = (instruction >> 3) & 7;
+      rd = (instruction) & 7;
+
+      GPR[rd] = GPR[rn] + GPR[rm];
+      printf("ADDS  R%d, R%d, R%d", rd, rn, rm);
+      GPR[15] += 2;
+      break;
+
+   case BX:
+      rm = (instruction >> 3) & 15;
+
+      GPR[15] = GPR[rm];
+      printf("BX R%d", rm);
+      GPR[15] += 2;
+      break;
+
+   case SUBS:
+      rm = (instruction >> 6) & 7;
+      rn = (instruction >> 3) & 7;
+      rd = (instruction) & 7;
+
+      GPR[rd] = GPR[rn] - GPR[rm];
+      printf("SUBS  R%d, R%d, R%d", rd, rn, rm);
+      GPR[15] += 2;
+      break;
+
+   case SUB:
+      imm = (instruction) & 127;
+
+      GPR[13] = GPR[13] - imm;
+      printf("SUB SP, SP, #%d", imm);
+      GPR[15] += 2;
+      break;
+
+   case ANDS:
+      rm = (instruction >> 3) & 7;
+      rd = (instruction) & 7;
+
+      GPR[rd] = rd & rm;
+      printf("ANDS  R%d, R%d, R%d", rd, rd, rm);
+      GPR[15] += 2;
+      break;
+
+   case ORRS:
+      rm = (instruction >> 3) & 7;
+      rd = (instruction) & 7;
+
+      GPR[rd] = rd | rm;
+      printf("ORRS R%d, R%d, R%d", rd, rd, rm);
+      GPR[15] += 2;
+      break;
+
+   case ADDs:
+      imm = (instruction >> 6) & 7;
+      rn = (instruction >> 3) & 7;
+      rd = (instruction) & 7;
+
+      GPR[rd] = GPR[rn] + imm;
+      printf("ADDs R%d, R%d, #%d", rd, rn, imm);
+      GPR[15] += 2;
+      break;
+
+   case ADD:
+      imm = (instruction) & 127;
+
+      GPR[13] += imm;
+      printf("ADD SP, SP, #%d", imm);
+      GPR[15] += 2;
+      break;
+   }
+}
